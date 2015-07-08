@@ -522,6 +522,7 @@ getQuery: ->
   - При описании конструкций `if`/`else` сначала проверяйте позивность/успешность с помощью `if`
   - Всегда используйте конструкцию `if`/`else` вместо конструкции  `unless`/`else`
   - Всегда используйте `if` для сложных условий
+  - Не допускается обрамление блока условий в скобки
 
 ```coffeescript 
 # -------- GOOD ---------
@@ -608,6 +609,7 @@ ui: replace: "[name=replace]"
 
 #### Строковые  комментарии
   - Строковые комментарии необходимо располагать перед комментируемой строкой, но так чтобы комментарий был отделен пустой строкой от предыдущего логического блока
+  - Комментрий пишется с большой буквы
   
 ```coffeescript 
 # -------- GOOD ---------
@@ -652,6 +654,7 @@ types: [
 
 #### Блочные комментарии
   - Блочный комментарий задается с использованием стандарта ###*
+  - Комментрий пишется с большой буквы
   - Для отделения логических блоков внутри комментария используется разделитель в одну пустую строку
   - Блочный комментарий должен быть отделен от вышеописанного кода пустой строкой
 
@@ -675,7 +678,7 @@ types: [
 
 @init()
 ###
- This is a block comment. Note that if this were a real block
+ this is a block comment. Note that if this were a real block
  comment, we would actually be describing the proceeding code.
  This is the second paragraph of the same block comment. Note
  that this paragraph was separated from the previous paragraph
@@ -713,15 +716,38 @@ module.exports = class TreeCollection extends Backbone.Collection
 
 ```
 
-#### Документирование методов
   - Группируйте методы и функции с помощью соответвующих комментариев, как описано ниже:
-    - Приватные методы - # PRIVATE
-    - Публичные методы (интерфейс класса) - # PUBLIC
-    - Функции, скрытые замыканием - # ENCLOSED/PROTECTED (TBD)
+    - `# PRIVATE` - приватные методы, которые не дожны вызываться извне
+    - `# PUBLIC` - публичные методы, формирующие интерфейс класса. Необходимо помнить что если метод не приватный - еще не значит что он является интерфейсом класса, это может быть обработчик события и в соответствии с соглашениями фреймворка иметь название, не начинающееся с `_`
+    - `# ENCLOSED/PROTECTED (TBD)` - функции, скрытые замыканием 
+    
+  - Описывать свойства и методы нужно в следующем порядке:
+    - Свойства и методы класса
+    - Свойства прототипа, в том числе вычисляемые через _.result (`idAttribute`, `url`, `defaults`, `events`, `triggers`, `behaviors`, etc...)
+    - Конструктор и `initialize`
+    - методы Backbone-а, Marionett-а (`onShow`, `beforeDestroy`, обработчики триггеров и все методы с тегом `@implements`
+    - PROTECTED
+    - PRIVATE
+    - PUBLIC
+  
+*При таком порядке описания свойств и методов в начале описания класса будут наиболее ожидаемые свойства и методы, затем "внутреняя кухня" и интерфейс* 
 
 ```coffeescript 
 # -------- GOOD ---------
 
+            ###*
+             * ...
+            ###
+            defaultOptions: []
+            
+            ###*
+             * ...
+            ###
+            initialize: ->
+              # ...
+
+# 1 ......................................................................... 80
+#                                                                              ↓
             ###################################################################
             # PROTECTED
 
@@ -761,6 +787,72 @@ module.exports = class TreeCollection extends Backbone.Collection
 
 ```
 
+#### Документирование методов
+  - Документирование методов является обязательным
+  - Сначала следует описание логики метода, при этом описание должно быть информативным и не должно повторять название метода
+  - Если метод должен возвращать значение, то присутствие тега @return обязательно, иначе тега `@return` быть не должно
+  
+```coffeescript 
+# -------- GOOD ---------
+
+###*
+ * Wrap function with try/catch, handle error and
+ * push it to the server with stacktrace
+ * @param {Function} fn - function to be wrapped
+ * @return {Function} wrapped function
+###
+wrapMethod = (fn) ->
+  (args...) ->
+    # ...
+
+# -------- BAD ----------
+
+###*
+ * Create a wrapper function
+###
+wrapMethod = (fn) ->
+  (args...) ->
+    # ...
+
+```
+
+
+
+- В случае, если метод абстрактный, должен быть тег @implements с указанием абстрактного класса
+
+```coffeescript 
+# -------- GOOD ---------
+
+class ReportsTree extends FancyTree
+
+  # ...
+  
+  ###*
+   * Show report on reports tree item click
+   * @implements FancyTree
+   * @param {Object} node - fancytree node
+   *
+  ###
+  onItemClick: (node) ->
+  
+
+# -------- BAD ----------
+
+winner = yes if pick in [47, 92, 13]
+
+```
+
+  - В случае, если объявление метода переписывает метод супер-класса, методу необходимо добавить тег @override
+ 
+```coffeescript 
+# -------- GOOD ---------
+
+
+# -------- BAD ----------
+
+
+```
+
 #### Аннотирование кода
   - Используйте аннотации, когда необходимо описать конкретные действия, которые должны быть приняты в отношении указанного блока кода
   - Аннотация должна располагаться непосредственно над кодом, который аннотация описывает. 
@@ -786,16 +878,16 @@ processPayload()
 analyze()
 ```
 
-#### Псевдонимы (aliases)
+#### Псевдонимы
   - Всегда используйте псевдонимы операторов - `is`, `isnt`, `not`, `and`, `or`, `or=`
 
 ```coffeescript 
 # -------- GOOD ---------
 
-if param is 'test' and param isn't 'foo' then
+if param is 'test' and param isnt 'foo' then
   # code here
  
-if param isn't 'foo' or param isn't 'bar' then
+if param isnt 'foo' or param isnt 'bar' then
   # code here
 
 temp or= {}
@@ -812,7 +904,7 @@ temp = temp || {}
 
 ```
 
-  - Не используйте булевые алиасы - on, off, yes, no
+  - Не используйте булевые псевдонимы - on, off, yes, no
 
 ```coffeescript 
 # -------- GOOD ---------
@@ -912,9 +1004,7 @@ $.users.on "click", (e) =>
 
 require 'lib/setup'
 Backbone = require 'backbone'
-
-# -------- BAD ----------
-
+Selection = require "models/events/selection.coffee"
 
 ```
 
@@ -936,106 +1026,11 @@ formatDate = (require "path/to/helpers.coffee").formatDate
 formatDate date
 ```
 
-#### 
-
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
-
-
-
-# --------- OK ----------
-
-
-```
-
-#### 
-
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
-
-
-
-# --------- OK ----------
-
-
-```
-
-#### 
-
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
-
-
-
-# --------- OK ----------
-
-
-```
-
-#### JQuery
-
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
-
-
-
-# --------- OK ----------
-
-
-```
-
-#### 
-
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
-
-
-
-# --------- OK ----------
-
-
-```
-
-#### Условия
-  - Не допускается обрамление блока условий в скобки
- 
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
-
-if (
-    a is b and
-    foo()
-)
-    bar()
-
-# --------- OK ----------
-
-
-```
+#### Обработка событиий
+  - При описании обработчиков в свойстве events:
+    - Имена методов должны начинаться с подчеркивания `_`
+    - Имена методов должны отображать действие, которое выполнится при возникновениисобытия (`_removeUser` а не `_onClickRemove`
+    - Все описания событий должны использовать `@ui`, если это поддержавается классом (в регионах, к примеру, нет поддержки ui)
 
 ```coffeescript 
 # -------- GOOD ---------
@@ -1061,13 +1056,62 @@ ui:
   users     : "ul.usersList > li"
 
 events: 
-  "click usersList": "_checkUser"
+  "click ul.usersList > li": "onUserClick"
   
-_checkUser: (e) ->
+onUserClick: (e) ->
   e.preventDefault()
   if el = $(e.target).find "[data-user]"
     @users.get el.data "id"
     .set "selected", true
+
+```
+
+
+#### Именование файлов исходного кода
+
+```coffeescript 
+# -------- GOOD ---------
+
+
+
+# -------- BAD ----------
+
+
+```
+
+#### 
+
+```coffeescript 
+# -------- GOOD ---------
+
+
+
+# -------- BAD ----------
+
+
+```
+
+#### 
+
+```coffeescript 
+# -------- GOOD ---------
+
+
+
+# -------- BAD ----------
+
+
+```
+
+#### 
+
+```coffeescript 
+# -------- GOOD ---------
+
+
+
+# -------- BAD ----------
+
 
 ```
 
