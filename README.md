@@ -467,7 +467,7 @@ el.select2 'val', date
 el.select2 'val', _formatDate(@getRunDate(model), DATE_FORMAT)
 ```
 
-  - Используйте разрушение (destructuring) для раскрытия объекта в параметрах функции
+  - Используйте разрушение (destructuring) для раскрытия объекта в параметрах функции (TBD)
 
 ```coffeescript 
 # -------- GOOD ---------
