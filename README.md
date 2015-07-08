@@ -29,7 +29,7 @@
 try
   null.toString()
   
-# --------- OK ----------
+# -------- OK -----------
 
 try
   null.toString()
@@ -503,6 +503,21 @@ getQuery: ->
       # ...
 ```
 
+#### Строки
+  - Для объединения строк используйте оператор интерполяции вместо простого объединения строк.
+  - Всегда используйте двойные кавычки `""`
+
+```coffeescript
+# -------- GOOD ---------
+
+@listenTo @model, "change:#{field} rollback", @update
+
+# -------- BAD ----------
+
+@listenTo @model, 'change:' + field + ' rollback', @update
+
+```
+
 #### Условия
   - При описании конструкций `if`/`else` сначала проверяйте позивность/успешность с помощью `if`
   - Всегда используйте конструкцию `if`/`else` вместо конструкции  `unless`/`else`
@@ -746,7 +761,180 @@ module.exports = class TreeCollection extends Backbone.Collection
 
 ```
 
+#### Аннотирование кода
+  - Используйте аннотации, когда необходимо описать конкретные действия, которые должны быть приняты в отношении указанного блока кода
+  - Аннотация должна располагаться непосредственно над кодом, который аннотация описывает. 
+  - Ключевое слово аннотации должно заканчиваться двоеточием и пробелом
+
+В коде могут использоваться следующие виды аннотаций:
+  - `TODO: ` - для указания проблемы, к которой нужно вернуться в дальнейшем или если вы предлагаете решение проблемы, которое должно быть реализовано
+  - `FIXME: ` - указывает на неработоспособный код, который должен быть исправлен
+  - `OPTIMIZE: ` - описывают код, который является неэффективным и может стать узким местом
+  - `HACK: ` - указывает на сомнительное решение задачи
+
 #### 
+
+```coffeescript 
+# -------- GOOD ---------
+
+# FIXME: The client's current state should *not* affect payload processing.
+resetClientState()
+processPayload()
+  
+# TODO: Ensure that the value returned by this call falls within a certain
+# range, or throw an exception.
+analyze()
+```
+
+#### Псевдонимы (aliases)
+  - Всегда используйте псевдонимы операторов - `is`, `isnt`, `not`, `and`, `or`, `or=`
+
+```coffeescript 
+# -------- GOOD ---------
+
+if param is 'test' and param isn't 'foo' then
+  # code here
+ 
+if param isn't 'foo' or param isn't 'bar' then
+  # code here
+
+temp or= {}
+
+# -------- BAD ----------
+
+if param == 'test' and param != 'foo' then
+   # code here
+ 
+if param != 'foo' or param != 'bar' then
+   # code here
+ 
+temp = temp || {}
+
+```
+
+  - Не используйте булевые алиасы - on, off, yes, no
+
+```coffeescript 
+# -------- GOOD ---------
+
+winner = true if pick in [47, 92, 13]
+
+# -------- BAD ----------
+
+winner = yes if pick in [47, 92, 13]
+
+```
+
+#### Генераторы списков
+
+  - Старайтесь использовать map/reduce функции или генераторы вместо стандартных вариаций наполнения списка
+
+```coffeescript 
+# -------- GOOD ---------
+
+results = _.filter array, (item) -> item.title is "test
+
+surnames = _ users
+.filter name: "John"
+.pluck 'surname'
+
+# -------- BAD ----------
+
+results = []
+for item in array
+  if item.name is "test"
+    results.push item.name
+    
+# -------- OK ----------
+    
+surnames = (user.surname for user in users when user.name is "John")
+
+```
+
+#### JQuery
+  - Для jQuery-переменных используйте префикс $
+  - Кэшируйте jQuery-запросы. Каждый новый jQuery-запрос делает повторный поиск по DOM-дереву, и приложение начинает работать медленнее
+
+```coffeescript 
+# -------- GOOD ---------
+
+setSidebar = ->
+  $sidebar = $('.sidebar')
+  $sidebar.hide()
+
+  # ...
+
+  $sidebar.css
+    'background-color': 'pink'
+
+# -------- BAD ----------
+
+setSidebar = ->
+  $('.sidebar').hide()
+
+  # ...
+
+  $('.sidebar').css
+    'background-color': 'pink'
+
+```
+
+  - Не создавайте большое количество обработчиков. Создавайте обработчики для родительских DOM-элеметов с использованием `event.target`
+  - Используйте *только* атрибуты `data` для поиска элементов и извлечения данных из них
+  
+```coffeescript 
+# -------- GOOD ---------
+
+$.sidebar = $(".sidebar")
+$.sidebar.on "click", (e) =>
+  if id = e.target.dataset["user-id"]
+    @trigger "show:user", id
+
+# -------- BAD ----------
+
+$.users = $(".sidebar > li")
+$.users.on "click", (e) =>
+  if id = e.currentTarget.dataset["user-id"]
+    @trigger "show:user", id
+
+```
+
+#### Импортирование модулей
+  - При импортировании модулей каждая директива  REQUIRE должна располагаться на отдельной строчке
+  - При импортирование модулей необходимо придерживаться следующим правилам группировки директив импорта:
+    - импортирование модулей внешних библиотек
+    - импортирование общих модулей продукта
+    - импортирование модулей, локальных для данного раздела
+  
+
+```coffeescript 
+# -------- GOOD ---------
+
+require 'lib/setup'
+Backbone = require 'backbone'
+
+# -------- BAD ----------
+
+
+```
+
+  - Если импортированный модуль представляет из себя объект, следует сохранять ссылку на весь объект
+  
+```coffeescript 
+# -------- GOOD ---------
+
+helpers = require "path/to/helpers.coffee"
+
+# ...
+helpers.formatDate date
+
+# -------- BAD ----------
+
+formatDate = (require "path/to/helpers.coffee").formatDate
+
+# ...
+formatDate date
+```
 
 #### 
 
@@ -756,6 +944,11 @@ module.exports = class TreeCollection extends Backbone.Collection
 
 
 # -------- BAD ----------
+
+
+
+# --------- OK ----------
+
 
 ```
 
@@ -768,27 +961,10 @@ module.exports = class TreeCollection extends Backbone.Collection
 
 # -------- BAD ----------
 
-```
-
-#### 
-
-```coffeescript 
-# -------- GOOD ---------
 
 
+# --------- OK ----------
 
-# -------- BAD ----------
-
-```
-
-#### 
-
-```coffeescript 
-# -------- GOOD ---------
-
-
-
-# -------- BAD ----------
 
 ```
 
@@ -801,9 +977,14 @@ module.exports = class TreeCollection extends Backbone.Collection
 
 # -------- BAD ----------
 
+
+
+# --------- OK ----------
+
+
 ```
 
-#### 
+#### JQuery
 
 ```coffeescript 
 # -------- GOOD ---------
@@ -856,4 +1037,37 @@ if (
 
 ```
 
+```coffeescript 
+# -------- GOOD ---------
+
+ui:
+  usersList : "[data-users]"
+  users     : "[data-user]"
+
+events: 
+  "click @usersList": "_checkUser"
+  
+_checkUser: (e) ->
+  e.preventDefault()
+  if el = $(e.target).find "[data-user]"
+    @users.get el.data "id"
+    .set "selected", true
+  
+
+# -------- BAD ----------
+
+ui:
+  usersList : "ul.usersList"
+  users     : "ul.usersList > li"
+
+events: 
+  "click usersList": "_checkUser"
+  
+_checkUser: (e) ->
+  e.preventDefault()
+  if el = $(e.target).find "[data-user]"
+    @users.get el.data "id"
+    .set "selected", true
+
+```
 
