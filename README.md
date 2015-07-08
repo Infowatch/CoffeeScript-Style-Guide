@@ -1,7 +1,8 @@
 # CoffeeScript Style Guide
 
 #### Кодировка
-Все стили продукта должны использовать кодировку UTF-8.
+  - Все стили продукта должны использовать кодировку UTF-8
+  - Все исходные коды должны быть описаны только с использованием латиницы (включая комментарии)
 
 #### Ширина строки
 Разрешенная максимальная длина строки в файлах равно 80 символам. Делая строчки не большими вы облегчаете ревью кода, а также сравнение двух файлов в IDE. 
@@ -9,9 +10,8 @@
 #### Пустые строки
   - Необходимо оставлять последнюю строчку файла пустой, лучше всего настроить IDE 
   - Необходимо отделять пустой строкой:
-    - пустой строкой определения функций и методов класса
-    - двумя пустыми строками 
-    - пустой строкой логические участки кода внутри функций и методов
+    - определения функций и методов класса
+    - логические участки кода внутри функций и методов
     - функции при описании свойств объекта
     - объекты внутри массивов, таким образом чтобы `,` находилась после пустой строки
   - Необходимо отделять 2-мя пустыми строками:
@@ -21,8 +21,7 @@
 Каждый файл исходного кода должен начинаться с "use strict"
 
 #### Исключения (exceptions)
-  - Запрещается подавлять исключения в коде.
-  - Если исключение было поймано, оно обязательно должно быть обработано
+  - Запрещается подавлять исключения в коде
 
 ```coffeescript
 # -------- BAD ----------
@@ -52,10 +51,7 @@ tasks = common_tasks.concat [
   "sass:dist"
 ]
 .concat [
-  if target is "watch"
-     "watch"
-   else
-     []
+  target is "watch" and target or []
 ]
  
 grunt.task.run tasks
@@ -120,24 +116,28 @@ foo = [
     ]
 ```
 
-  - В блоке отступ перед каждым условием должен совпадать с отступом перед первой строкой блока
+  - В блоке условий отступ для всех условий, описанных с новой строки должен:
+    - быть увеличен на 4 пробела, при этом первое условие, стоящее после `if` должно быть выравнено пробелами
+    - таким же как и в строке с `if`
 
 ```coffeescript 
 # -------- GOOD ---------
 
-if a is b and
-   foo()
-  bar()
- 
-if a is b and
- foo()
-  bar()
- 
- # -------- BAD ----------
+if  not options.force and 
+    not mix.consistent
+  @stop()
+  
+# --------- OK ----------
 
-if a is b and
-foo()
-  bar()
+if not options.force and 
+not mix.consistent
+  @stop()
+
+# -------- BAD ----------
+
+if not options.force and 
+ not mix.consistent
+  @stop()
 ```
 
   - При описании цепочки вызовов (call chain), необходимо сохранять отступ
@@ -203,20 +203,6 @@ bar =
   value: 87
 
 ```
-
-  - 
-  
-```coffeescript 
-# -------- GOOD ---------
-
-default: 
-
-# -------- BAD ----------
-
-default: 
-
-```
-
 
 #### Пробелы
   - Не используйте дополнительные пробелы:
@@ -441,10 +427,17 @@ disableButton: ->
 
 preventFieldSerialization getFieldName(el)
 
+classes = _ [@resolveNodeClass? node, model]
+.flatten()
+.compact()
+.join " "
+
 # -------- BAD ----------
 
 preventFieldSerialization getFieldName el
 preventFieldSerialization(getFieldName el)
+
+classes = (_.compact _.flatten [@resolveNodeClass? node, model]).join " "
 ```
 
   - Запрещено определять более одной функции в одной строке
@@ -510,6 +503,46 @@ getQuery: ->
       # ...
 ```
 
+#### Условия
+  - При описании конструкций `if`/`else` сначала проверяйте позивность/успешность с помощью `if`
+  - Всегда используйте конструкцию `if`/`else` вместо конструкции  `unless`/`else`
+  - Всегда используйте `if` для сложных условий
+
+```coffeescript 
+# -------- GOOD ---------
+
+data = if @user
+  @start()
+else
+  @stop()
+   
+if  not options.force and 
+    not mix.consistent
+
+if @loggedIn
+  # ...
+
+# -------- BAD ----------
+
+data = unless @user
+  @stop()
+else
+  @start()
+
+unless options.force or mix.consistent
+  @stop()
+  
+return unless @loggedIn
+# ...
+  
+if (
+  not options.force and 
+  not mix.consistent
+)
+  @stop()
+
+```
+
 #### Классы
   - Для именования классов используйте правила именования переменных, за исключением нотации: для именования классов используется натация PascalCase
   - Имя класса должно отражать сущность (отвечать на вопрос "кто?"/"что?") и дожно быть однозначным
@@ -558,27 +591,162 @@ ui:
 ui: replace: "[name=replace]"
 ```
 
-#### 
+#### Строковые  комментарии
+  - Строковые комментарии необходимо располагать перед комментируемой строкой, но так чтобы комментарий был отделен пустой строкой от предыдущего логического блока
+  
+```coffeescript 
+# -------- GOOD ---------
+
+getType = ->
+  console.log 'проверяем тип...'
+  
+  # задаем тип по умолчанию 'no type'
+  this._type or 'no type'
+
+# -------- BAD ----------
+
+getType = ->
+  console.log 'проверяем тип...'
+  type = this._type or 'no type' # задаем тип по умолчанию 'no type'
+  return type
+
+```
+
+  - При комменрировании значений списков и объектов комментарии следует располагать справа от значений, при условии что комментарий умещается в строке
 
 ```coffeescript 
 # -------- GOOD ---------
 
-
+types: [
+  "object_type_code"   # Тип события
+  "category"           # Категории
+  "protected_document" # Объекты защиты
+]
 
 # -------- BAD ----------
 
+types: [
+  # Тип события
+  "object_type_code"
+  # Категории  
+  "category"        
+  # Объекты защиты  
+  "protected_document"
+]
 ```
 
-#### 
+#### Блочные комментарии
+  - Блочный комментарий задается с использованием стандарта ###*
+  - Для отделения логических блоков внутри комментария используется разделитель в одну пустую строку
+  - Блочный комментарий должен быть отделен от вышеописанного кода пустой строкой
 
 ```coffeescript 
 # -------- GOOD ---------
 
-
+@init()
+ 
+###*
+ * This is a block comment. Note that if this were a real block
+ * comment, we would actually be describing the proceeding code.
+ *
+ * This is the second paragraph of the same block comment. Note
+ * that this paragraph was separated from the previous paragraph
+ * by a line containing a single comment character.
+###
+@start()
+@stop()
 
 # -------- BAD ----------
 
+@init()
+###
+ This is a block comment. Note that if this were a real block
+ comment, we would actually be describing the proceeding code.
+ This is the second paragraph of the same block comment. Note
+ that this paragraph was separated from the previous paragraph
+ by a line containing a single comment character.
+###
+@start()
+@stop()
+
 ```
+
+#### Документирование классов
+  - Для документирования классов и методов используются аннотации Codo с использованием фигурных скобок 
+  - При наличии виртуальных/абстрактных методов необходимо использовать @method
+  
+```coffeescript 
+# -------- GOOD ---------
+
+###*
+ * Class to service fancytree with data
+ *
+ * @method #prepareNode(node, model)
+ *   Prepare node to be involved to fancytree
+ *   @param {Object} node
+ *   @param {Backbone.Model} model
+ *
+ * @method #resolveNodeClass(node, model)
+ *   Add additional classes to fancytree node
+ *   @param {Object} node
+ *   @param {Backbone.Model} model
+ *
+###
+module.exports = class TreeCollection extends Backbone.Collection
+
+    rootId: null
+
+```
+
+#### Документирование методов
+  - Группируйте методы и функции с помощью соответвующих комментариев, как описано ниже:
+    - Приватные методы - # PRIVATE
+    - Публичные методы (интерфейс класса) - # PUBLIC
+    - Функции, скрытые замыканием - # ENCLOSED/PROTECTED (TBD)
+
+```coffeescript 
+# -------- GOOD ---------
+
+            ###################################################################
+            # PROTECTED
+
+            ###*
+             * Route handlers presenter involves common dom and state
+             * manipulations for each handler e.g. sidebar tree view rendering
+             * @param  {String} type - route main entity type (report/folder)
+             * @param  {Function} handler - route handler
+            ###
+            _presenter = (type, handler) ->
+                (id, tail...) ->
+
+            # ...
+
+            ###################################################################
+            # PRIVATE
+
+            ###*
+             * Get query from collection
+             * @param  {Number} id
+             * @return {Backbone.Model}
+            ###
+            _getQuery: (id) ->
+              query = @queries.get id
+                
+            # ... 
+            
+            ###################################################################
+            # PUBLIC
+
+            ###*
+             * Show empty view
+            ###
+            show: _presenter "empty", ->
+              @tree.resetNodesActivity()
+              @regions.content.show new EmptyView
+
+```
+
+#### 
 
 #### 
 
@@ -688,52 +856,4 @@ if (
 
 ```
 
-#### Документирование методов
-  - Группируйте методы и функции с помощью соответвующих комментариев, как описано ниже:
-    - Приватные методы - # PRIVATE
-    - Публичные методы (интерфейс класса) - # PUBLIC
-    - Функции, скрытые замыканием - # ENCLOSED/PROTECTED (TBD)
 
-```coffeescript 
-# -------- GOOD ---------
-
-            ###################################################################
-            # PROTECTED
-
-            ###*
-             * Route handlers presenter involves common dom and state
-             * manipulations for each handler e.g. sidebar tree view rendering
-             * @param  {String} type - route main entity type (report/folder)
-             * @param  {Function} handler - route handler
-            ###
-            _presenter = (type, handler) ->
-                (id, tail...) ->
-
-            # ...
-
-            ###################################################################
-            # PRIVATE
-
-            ###*
-             * Get query from collection
-             * @param  {Number} id
-             * @return {Backbone.Model}
-            ###
-            _getQuery: (id) ->
-              query = @queries.get id
-                
-            # ... 
-            
-            ###################################################################
-            # PUBLIC
-
-            ###*
-             * Show empty view
-            ###
-            show: _presenter "empty", ->
-              @tree.resetNodesActivity()
-              @regions.content.show new EmptyView
-
-```
-
-#### 
