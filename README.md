@@ -506,15 +506,20 @@ getQuery: ->
 #### Строки
   * Для объединения строк используйте оператор интерполяции вместо простого объединения строк.
   * Всегда используйте двойные кавычки `""`
+  * Не вызывайте функции и методы для интерполирования
 
 ```coffeescript
 # -------- GOOD ---------
 
 @listenTo @model, "change:#{field} rollback", @update
 
+name = name.replace ///\s*#{ln}\s\d+$///, ""
+name = "#{name} #{@locale.copy}"
+
 # -------- BAD ----------
 
 @listenTo @model, 'change:' + field + ' rollback', @update
+name = "#{name.replace(///\s*#{ln}\s\d+$///, '')} #{@locale.copy}"
 
 ```
 
