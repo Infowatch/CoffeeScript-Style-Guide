@@ -1030,7 +1030,7 @@ surnames = (user.surname for user in users when user.name is "John")
 ```
 
 #### JQuery
-  * Для jQuery-переменных используйте префикс $
+  * Для jQuery-переменных используйте префикс `$` (TBD)
   * Кэшируйте jQuery-запросы. Каждый новый jQuery-запрос делает повторный поиск по DOM-дереву, и приложение начинает работать медленнее
 
 ```coffeescript 
@@ -1165,15 +1165,30 @@ onUserClick: (e) ->
 
 ```
 
-#### 
+#### Использование data-атрибутов
+ * Имена атрибутов должны содержать сооветствовать выражению `/^[a-z\-]+$/`
+ * Значения должны иметь только недетерминированные дата-атрибуты (однородные с идеологической точки зрения)
 
 ```coffeescript 
 # -------- GOOD ---------
 
-
+ui:
+  item      : "[data-collapse-item]"
+  container : "[data-collapse-container]"
+  
+  # actions
+  save   : "[data-action='save']"
+  delete : "[data-action='delete']"
 
 # -------- BAD ----------
 
+ui:
+  item      : "[data-collapse=item]"
+  container : "[data-collapse=container]"
+  
+  # actions
+  save    : "[data-action-save]"
+  delete  : "[data-action-delete]"
 
 ```
 
