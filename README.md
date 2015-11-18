@@ -520,44 +520,29 @@ getQuery: ->
 ```
 
 #### Условия
-  * При описании конструкций `if`/`else` сначала проверяйте позивность/успешность с помощью `if`
+  * _Условие_ должно быть описано _до блока_ инструкций, удовлеворяющих условию
   * Всегда используйте конструкцию `if`/`else` вместо конструкции  `unless`/`else`
   * Всегда используйте `if` для сложных условий
-  * Не допускается обрамление блока условий в скобки
 
 ```coffeescript 
 # -------- GOOD ---------
 
-data = if @user
-  @start()
-else
-  @stop()
-   
-if  not options.force and 
-    not mix.consistent
+if not options.force and not mix.consistent
+  # ...
 
 if @loggedIn
   # ...
-
+  
+if not @loggedIn
+  # ...
+  
 # -------- BAD ----------
 
-data = unless @user
-  @stop()
-else
-  @start()
-
 unless options.force or mix.consistent
-  @stop()
+  # ...
   
 return unless @loggedIn
-# ...
-  
-if (
-  not options.force and 
-  not mix.consistent
-)
-  @stop()
-
+return if not @loggedIn
 ```
 
 #### Классы
