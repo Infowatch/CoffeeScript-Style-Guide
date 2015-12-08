@@ -1225,18 +1225,21 @@ Backbone модель - отражает сущность в системе, с�
 Пример обработки:
 
 ```coffeescript 
-# -------- GOOD ---------
+
+  constructor: ->
+    @user = new UserModel
+    super
 
   parse: (data) =>
     data = super
-
     if user = data.user
-      @user ?= new UserModel
       @user.set data.user
-      
     _.omit data, 'user'
 
-# -------- BAD ----------
-
+  toJSON: (options = {}) ->
+    data = super
+    if options.withQuery
+      data.query = @query.toJSON(options)
+    data
 
 ```
