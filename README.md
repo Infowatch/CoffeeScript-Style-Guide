@@ -1153,16 +1153,33 @@ onUserClick: (e) ->
 #### Использование data-атрибутов
  * Имена атрибутов должны содержать сооветствовать выражению `/^[a-z\-]+$/`
  * Значения должны иметь только недетерминированные дата-атрибуты (однородные с идеологической точки зрения)
+ * Значения data-атрибутов должны быть в формате camelCase
+ * Значения data-атрибутов должны быть заключены в кавычки `'`
+ 
+В проекте используются следующие соглашения:
+ * `data-ui` - для связи с объектом представления
+ * `data-region` - для регионов
+ * `data-action` - для обозначения действа при взаимодействии
+ * `data-form` - для бейхейвера форм
+ * `data-state` - для хранения и инциализации состояний (TBD)
+ * `data-entry` - для тултипов (TBD)
 
 ```coffeescript 
 # -------- GOOD ---------
 
 ui:
-  item      : "[data-collapse-item]"
-  container : "[data-collapse-container]"
+  item      : "[data-ui='collapse-item']"
+  container : "[data-ui='collapse-container']"
+  
+  save : "[data-action='save']" # SO WHY I HAVE TO USE data-ui ATTRIBUTE ? TBD
+  save : "[data-ui='save']
+  
+  # <button data-ui="save" data-action="save">save</button>
+  # VS
+  # <button data-action="save">save</button>
+  # i think it should be normal only if @ui should be automatically filled by data-ui elements
   
   # actions
-  save   : "[data-action='save']"
   delete : "[data-action='delete']"
 
 # -------- BAD ----------
@@ -1224,7 +1241,7 @@ Backbone модель - отражает сущность в системе, с�
 
 Пример обработки:
 
-```coffeescript 
+```coffeescript
 
   constructor: ->
     @user = new UserModel
